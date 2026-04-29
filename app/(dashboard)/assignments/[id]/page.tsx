@@ -39,7 +39,9 @@ export default function AssignmentPage({ params }: { params: Promise<{ id: strin
       setClassroom(classData)
     }
 
-    const existingSubmission = getSubmissionByStudent(id, currentUser.id)
+    // Исправлено: преобразуем id в строку, если нужно
+    const userId = typeof currentUser.id === 'string' ? currentUser.id : String(currentUser.id)
+    const existingSubmission = getSubmissionByStudent(id, userId)
     if (existingSubmission) {
       setSubmission(existingSubmission)
       setAnswer(existingSubmission.content)
@@ -51,6 +53,8 @@ export default function AssignmentPage({ params }: { params: Promise<{ id: strin
     if (!user || !assignment) return
 
     setLoading(true)
+
+    const userId = typeof user.id === 'string' ? user.id : String(user.id)
 
     if (submission) {
       updateSubmission(submission.id, {
@@ -70,7 +74,7 @@ export default function AssignmentPage({ params }: { params: Promise<{ id: strin
       const newSubmission: Submission = {
         id: generateId(),
         assignmentId: assignment.id,
-        studentId: user.id,
+        studentId: userId,
         studentName: user.name,
         content: answer,
         submittedAt: new Date().toISOString()
