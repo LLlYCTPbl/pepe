@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-let classes: any[] = []
+declare global {
+  var _globalClasses: any[]
+}
+
+if (!global._globalClasses) {
+  global._globalClasses = []
+}
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const classData = classes.find(c => c.id === params.id)
+  const { id } = await params
+  const classData = global._globalClasses.find(c => c.id === id)
   
   if (!classData) {
     return NextResponse.json(

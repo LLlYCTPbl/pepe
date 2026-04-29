@@ -14,15 +14,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const newClass = await request.json()
-  
-  const existingIndex = global._globalClasses.findIndex(c => c.id === newClass.id)
-  
-  if (existingIndex === -1) {
-    global._globalClasses.push(newClass)
-  } else {
-    global._globalClasses[existingIndex] = newClass
-  }
-  
+  global._globalClasses.push(newClass)
   return NextResponse.json(newClass)
 }
 
