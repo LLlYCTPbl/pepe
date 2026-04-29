@@ -1,16 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
-
-// Временное решение для деплоя
 export const runtime = 'nodejs'
 
-let enrollments: any[] = []
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
+  const enrollments = await prisma.enrollment.findMany()
   return NextResponse.json(enrollments)
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  enrollments.push(body)
-  return NextResponse.json(body)
+  const enrollment = await prisma.enrollment.create({
+    data: {
+      classId: body.classroomId,
+      studentId: body.studentId,
+      studentName: body.studentName,
+    }
+  })
+  return NextResponse.json(enrollment)
 }
