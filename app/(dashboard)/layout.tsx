@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Home, BookOpen, LogOut, Menu, X, User, Plus } from 'lucide-react'
+import { Home, BookOpen, LogOut, Menu, X, User as UserIcon, Plus } from 'lucide-react'
 import { getCurrentUser, setCurrentUser } from '@/lib/storage'
 import NotificationBell from '@/components/NotificationBell'
 import type { User } from '@/types'
@@ -81,7 +81,7 @@ export default function DashboardLayout({
             className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition"
             onClick={() => setSidebarOpen(false)}
           >
-            <User className="w-5 h-5" />
+            <UserIcon className="w-5 h-5" />
             <span>Профиль</span>
           </Link>
           {user.role === 'teacher' && (
