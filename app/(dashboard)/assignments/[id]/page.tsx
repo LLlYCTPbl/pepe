@@ -8,8 +8,8 @@ import { getCurrentUser, getAssignmentById, getClassById, getSubmissionByStudent
 import type { User, Assignment, Classroom, Submission } from '@/types'
 import * as React from 'react'
 
-export default function AssignmentPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params)
+export default function AssignmentPage({ params }: { params: { id: string } }) {
+  const { id } = params
   
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)

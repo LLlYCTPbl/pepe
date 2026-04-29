@@ -8,8 +8,8 @@ import { getCurrentUser, getClassById, getClassStudents, getUsers } from '@/lib/
 import type { User as UserType, Classroom } from '@/types'
 import * as React from 'react'
 
-export default function PeoplePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params)
+export default function PeoplePage({ params }: { params: { id: string } }) {
+  const { id } = params
   const router = useRouter()
   const [user, setUser] = useState<UserType | null>(null)
   const [classroom, setClassroom] = useState<Classroom | null>(null)

@@ -8,8 +8,8 @@ import { getCurrentUser, getClassById, getSubmissions, getClassStudents, getEnro
 import type { User, Classroom, Post, Comment, Assignment, Submission, PostType } from '@/types'
 import * as React from 'react'
 
-export default function ClassPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params)
+export default function ClassPage({ params }: { params: { id: string } }) {
+  const { id } = params
   
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
