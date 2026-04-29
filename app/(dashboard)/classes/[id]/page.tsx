@@ -123,7 +123,7 @@ export default function ClassPage({ params }: { params: Promise<{ id: string }> 
     setLoading(true)
     
     const postId = Date.now().toString()
-    let assignmentId = null
+    let assignmentId: string | undefined = undefined
     
     if (newPost.type === 'assignment') {
       assignmentId = Date.now().toString() + 'asgn'
@@ -175,18 +175,18 @@ export default function ClassPage({ params }: { params: Promise<{ id: string }> 
       }
     }
     
-    const newPostData: Post = {
-      id: postId,
-      classroomId: classroom.id,
-      authorId: user.id,
-      authorName: user.name,
-      authorRole: user.role,
-      title: newPost.title,
-      content: newPost.content,
-      type: newPost.type,
-      assignmentId: assignmentId,
-      createdAt: new Date().toISOString()
-    }
+const newPostData: Post = {
+  id: postId,
+  classroomId: classroom.id,
+  authorId: user.id,
+  authorName: user.name,
+  authorRole: user.role,
+  title: newPost.title,
+  content: newPost.content,
+  type: newPost.type,
+  assignmentId: assignmentId || undefined,  // Исправлено: null превращаем в undefined
+  createdAt: new Date().toISOString()
+}
 
     const existingPosts = JSON.parse(localStorage.getItem('posts') || '[]')
     existingPosts.push(newPostData)

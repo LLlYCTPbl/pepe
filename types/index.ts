@@ -42,7 +42,7 @@ export interface Post {
   content: string
   type: PostType
   attachments?: string[]
-  assignmentId?: string
+  assignmentId?: string  // уже должно быть string | undefined
   createdAt: string
 }
 
