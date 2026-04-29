@@ -408,114 +408,115 @@ const newPostData: Post = {
                       )}
                     </div>
                     <div className="text-right ml-4 min-w-[120px]">
-                      {sub.score !== undefined ? (
-                        <div className="mb-2">
-                          <div className="text-lg font-bold text-green-600">
-                            {sub.score}/{selectedAssignment.maxScore}
-                          </div>
-                          <button
-                            onClick={() => {
-                              const newScore = prompt(`Изменить оценку (0-${selectedAssignment.maxScore})`, sub.score.toString())
-                              if (newScore !== null) {
-                                const scoreNum = parseInt(newScore)
-                                if (!isNaN(scoreNum) && scoreNum >= 0 && scoreNum <= selectedAssignment.maxScore) {
-                                  const feedback = prompt('Комментарий к работе (необязательно):', sub.feedback || '')
-                                  
-                                  const updatedSubmissions = submissions.map(s => 
-                                    s.id === sub.id ? { 
-                                      ...s, 
-                                      score: scoreNum, 
-                                      feedback: feedback || undefined,
-                                      gradedAt: new Date().toISOString() 
-                                    } : s
-                                  )
-                                  localStorage.setItem('submissions', JSON.stringify(updatedSubmissions))
-                                  setSubmissions(updatedSubmissions)
-                                  setAssignmentSubmissions(updatedSubmissions.filter(s => s.assignmentId === selectedAssignment.id))
-                                  
-                                  fetch('/api/submissions', {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(updatedSubmissions)
-                                  })
-                                  
-                                  fetch('/api/notifications', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                      id: Date.now().toString(),
-                                      type: 'grade',
-                                      title: '📊 Оценка изменена!',
-                                      message: `Ваша работа "${selectedAssignment.title}" изменена на ${scoreNum} баллов`,
-                                      link: `/classes/${classroom?.id}`,
-                                      read: false,
-                                      createdAt: new Date().toISOString()
-                                    })
-                                  })
-                                  
-                                  alert(`Оценка изменена на ${scoreNum}!`)
-                                } else {
-                                  alert(`Оценка должна быть от 0 до ${selectedAssignment.maxScore}`)
-                                }
-                              }
-                            }}
-                            className="w-full px-3 py-1 bg-yellow-500 text-white text-sm rounded-md hover:bg-yellow-600 transition mb-1"
-                          >
-                            ✏️ Изменить оценку
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            const score = prompt('Введите оценку (0-' + selectedAssignment.maxScore + ')', '0')
-                            if (score !== null) {
-                              const newScore = parseInt(score)
-                              if (!isNaN(newScore) && newScore >= 0 && newScore <= selectedAssignment.maxScore) {
-                                const feedback = prompt('Комментарий к работе (необязательно):', '')
-                                
-                                const updatedSubmissions = submissions.map(s => 
-                                  s.id === sub.id ? { 
-                                    ...s, 
-                                    score: newScore, 
-                                    feedback: feedback || undefined,
-                                    gradedAt: new Date().toISOString() 
-                                  } : s
-                                )
-                                localStorage.setItem('submissions', JSON.stringify(updatedSubmissions))
-                                setSubmissions(updatedSubmissions)
-                                setAssignmentSubmissions(updatedSubmissions.filter(s => s.assignmentId === selectedAssignment.id))
-                                
-                                fetch('/api/submissions', {
-                                  method: 'PUT',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify(updatedSubmissions)
-                                })
-                                
-                                fetch('/api/notifications', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({
-                                    id: Date.now().toString(),
-                                    type: 'grade',
-                                    title: '🎯 Работа проверена!',
-                                    message: `Ваша работа "${selectedAssignment.title}" оценена на ${newScore} баллов`,
-                                    link: `/classes/${classroom?.id}`,
-                                    read: false,
-                                    createdAt: new Date().toISOString()
-                                  })
-                                })
-                                
-                                alert('Оценка сохранена!')
-                              } else {
-                                alert(`Оценка должна быть от 0 до ${selectedAssignment.maxScore}`)
-                              }
-                            }
-                          }}
-                          className="w-full px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition"
-                        >
-                          📝 Оценить
-                        </button>
-                      )}
+{sub.score !== undefined ? (
+  <div className="mb-2">
+    <div className="text-lg font-bold text-green-600">
+      {sub.score}/{selectedAssignment.maxScore}
+    </div>
+    <button
+      onClick={() => {
+        const currentScore = sub.score !== undefined ? sub.score.toString() : '0'
+        const newScore = prompt(`Изменить оценку (0-${selectedAssignment.maxScore})`, currentScore)
+        if (newScore !== null) {
+          const scoreNum = parseInt(newScore)
+          if (!isNaN(scoreNum) && scoreNum >= 0 && scoreNum <= selectedAssignment.maxScore) {
+            const feedback = prompt('Комментарий к работе (необязательно):', sub.feedback || '')
+            
+            const updatedSubmissions = submissions.map(s => 
+              s.id === sub.id ? { 
+                ...s, 
+                score: scoreNum, 
+                feedback: feedback || undefined,
+                gradedAt: new Date().toISOString() 
+              } : s
+            )
+            localStorage.setItem('submissions', JSON.stringify(updatedSubmissions))
+            setSubmissions(updatedSubmissions)
+            setAssignmentSubmissions(updatedSubmissions.filter(s => s.assignmentId === selectedAssignment.id))
+            
+            fetch('/api/submissions', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updatedSubmissions)
+            })
+            
+            fetch('/api/notifications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                id: Date.now().toString(),
+                type: 'grade',
+                title: '📊 Оценка изменена!',
+                message: `Ваша работа "${selectedAssignment.title}" изменена на ${scoreNum} баллов`,
+                link: `/classes/${classroom?.id}`,
+                read: false,
+                createdAt: new Date().toISOString()
+              })
+            })
+            
+            alert(`Оценка изменена на ${scoreNum}!`)
+          } else {
+            alert(`Оценка должна быть от 0 до ${selectedAssignment.maxScore}`)
+          }
+        }
+      }}
+      className="w-full px-3 py-1 bg-yellow-500 text-white text-sm rounded-md hover:bg-yellow-600 transition mb-1"
+    >
+      ✏️ Изменить оценку
+    </button>
+  </div>
+) : (
+  <button
+    onClick={() => {
+      const score = prompt('Введите оценку (0-' + selectedAssignment.maxScore + ')', '0')
+      if (score !== null) {
+        const newScore = parseInt(score)
+        if (!isNaN(newScore) && newScore >= 0 && newScore <= selectedAssignment.maxScore) {
+          const feedback = prompt('Комментарий к работе (необязательно):', '')
+          
+          const updatedSubmissions = submissions.map(s => 
+            s.id === sub.id ? { 
+              ...s, 
+              score: newScore, 
+              feedback: feedback || undefined,
+              gradedAt: new Date().toISOString() 
+            } : s
+          )
+          localStorage.setItem('submissions', JSON.stringify(updatedSubmissions))
+          setSubmissions(updatedSubmissions)
+          setAssignmentSubmissions(updatedSubmissions.filter(s => s.assignmentId === selectedAssignment.id))
+          
+          fetch('/api/submissions', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedSubmissions)
+          })
+          
+          fetch('/api/notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: Date.now().toString(),
+              type: 'grade',
+              title: '🎯 Работа проверена!',
+              message: `Ваша работа "${selectedAssignment.title}" оценена на ${newScore} баллов`,
+              link: `/classes/${classroom?.id}`,
+              read: false,
+              createdAt: new Date().toISOString()
+            })
+          })
+          
+          alert('Оценка сохранена!')
+        } else {
+          alert(`Оценка должна быть от 0 до ${selectedAssignment.maxScore}`)
+        }
+      }
+    }}
+    className="w-full px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition"
+  >
+    📝 Оценить
+  </button>
+)}
                     </div>
                   </div>
                 </div>
@@ -701,7 +702,7 @@ const newPostData: Post = {
                 const postComments = getCommentsForPost(post.id)
                 const showCommentsForThis = showComments === post.id
                 const assignment = getAssignmentForPost(post.id)
-                const submission = assignment ? getSubmissionForStudent(assignment.id, user.id) : null
+                const submission = assignment ? getSubmissionForStudent(assignment.id, String(user.id)) : null
                 
                 return (
                   <div key={post.id} className="bg-white rounded-lg shadow">
