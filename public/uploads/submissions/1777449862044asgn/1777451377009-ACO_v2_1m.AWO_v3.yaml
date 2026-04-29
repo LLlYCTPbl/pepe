@@ -1,0 +1,176 @@
+# scenarios/ACO_v2_1m.AWO_v3.yaml
+name: "ACO_v2_1m.AWO_v3"
+description: "ActChargeOn_v2 - Постановка на баланс → ActWriteOff_v3 - Списание"
+
+documents:
+  - ActChargeOn_v2:
+#      flags: # <-- НОВАЯ СЕКЦИЯ
+#        fake_sign: false
+#        fake_cert: false
+#        break_xsd: false
+
+      fsrar_id: "030000338925"
+      type_write_off: "Пересортица"
+      note: "Постановка на баланс - маркированная"
+
+      positions:
+        - alccode: "0300003389250000016"
+          product_vcode: "АП"
+          producttype_code: "200"
+          mark_amount: 10
+          alc_percent: 40
+          bottling_date: "2026-04-01"
+          ttn_date: "2026-04-01"
+
+      checks:
+        exchanger:
+          description: "Проверка ответов УТМ на HTTP запросы"
+          expected_statuses:
+            PUT: 201
+            POST_INBOX: 200
+            OPTIONS: 200
+            PATCH: 202
+
+        inspector:
+          description: "Проверка обработки документа в ИС"
+          ticket_parsing:
+            enabled: false
+
+        ibark:
+          description: "Проверка балансов и регистров"
+          checks:
+            - name: "registry_documents"
+              db: "codes"
+              sql: |
+                SELECT id, fsrarid, alccode, formb, docid, amount, vol, dt, ins, 
+                       dtype, parent, forma, price, ismarked 
+                FROM registry.documents d 
+                WHERE d.docid = :doc_id and d.dtype = :dtype
+              params:
+                doc_id: "{doc_id}"
+                dtype: "{dtype}"
+              asserts:
+                - expect: "row_count = 1"
+                  description: "Документ зарегистрирован в registry.documents"
+                - expect: "field:docid IS NOT NULL"
+                  description: "docid не должен быть NULL"
+                - expect: "field:forma IS NOT NULL"
+                  description: "Форма A заполнена"
+                - expect: "field:formb IS NOT NULL"
+                  description: "Форма B заполнена"
+                - expect: "field:ismarked = True"
+                  description: "Продукция маркированная"
+
+            - name: "marks_on_balance"
+              db: "codes"
+              sql: "SELECT b.code, b.val, b.shard_id FROM balance_{fsrar_id} b WHERE b.code = ANY(:marks)"
+              params:
+                fsrar_id: "{fsrar_id}"
+                marks: "{marks}"
+              asserts:
+                - expect: "row_count = 0"
+                  description: "Все марки должны быть списаны с баланса"
+
+            - name: "actchargeon_header"
+              db: "documents"
+              sql: "SELECT a.* FROM input.actchargeon a WHERE a.docnumber = :docnum"
+              params:
+                docnum: "{doc_number}"
+              asserts:
+                - expect: "row_count = 1"
+                  description: "Документ появился в input.actchargeon"
+
+            - name: "actchargeon_positions"
+              db: "documents"
+              sql: |
+                SELECT a2.* 
+                FROM input.actchargeon a 
+                INNER JOIN input.actchargeonpos a2 ON a.id = a2.actid 
+                WHERE a.docnumber = :docnum
+              params:
+                docnum: "{doc_number}"
+              asserts:
+                - expect: "row_count = 1"
+                  description: "Количество позиций соответствует ожидаемому"
+
+  - ActWriteOff_v3:
+      use_chain_context: true
+      fsrar_id: "030000338925"
+      type_write_off: "Пересортица"
+      note: "Списание марок"
+
+      checks:
+        exchanger:
+          description: "Проверка ответов УТМ на HTTP запросы"
+          expected_statuses:
+            PUT: 201
+            POST_INBOX: 200
+            OPTIONS: 200
+            PATCH: 202
+
+        inspector:
+          description: "Проверка обработки документа в ИС"
+          ticket_parsing:
+            enabled: false
+
+        ibark:
+          description: "Проверка балансов и регистров после списания"
+          checks:
+            - name: "registry_documents"
+              db: "codes"
+              sql: |
+                SELECT id, fsrarid, alccode, formb, docid, amount, vol, dt, ins, 
+                       dtype, parent, forma, price, ismarked 
+                FROM registry.documents d 
+                WHERE d.docid = :doc_id and d.dtype = :dtype
+              params:
+                doc_id: "{doc_id}"
+                dtype: "{dtype}"
+              asserts:
+                - expect: "row_count = 1"
+                  description: "Документ зарегистрирован в registry.documents"
+                - expect: "field:docid IS NOT NULL"
+                  description: "docid не должен быть NULL"
+                - expect: "field:forma IS NOT NULL"
+                  description: "Форма A заполнена"
+                - expect: "field:formb IS NOT NULL"
+                  description: "Форма B заполнена"
+                - expect: "field:ismarked = True"
+                  description: "Продукция маркированная"
+
+            - name: "marks_on_balance"
+              db: "codes"
+              sql: "SELECT b.code, b.val, b.shard_id FROM balance_{fsrar_id} b WHERE b.code = ANY(:marks)"
+              params:
+                fsrar_id: "{fsrar_id}"
+                marks: "{marks}"
+              asserts:
+                - expect: "row_count = 10"
+                  description: "Все марки должны быть на балансе"
+                - expect: "each:field:val IS NOT NULL"
+                  description: "У всех марок положительный остаток"
+
+            - name: "actwriteoff_header"
+              db: "documents"
+              sql: |
+                SELECT a.* 
+                FROM "output".actwriteoff a 
+                WHERE a.docnumber = :docnum
+              params:
+                docnum: "{doc_number}"
+              asserts:
+                - expect: "row_count = 1"
+                  description: "Документ появился в output.actwriteoff"
+
+            - name: "actwriteoff_positions"
+              db: "documents"
+              sql: |
+                SELECT a2.* 
+                FROM "output".actwriteoff a 
+                INNER JOIN "output".actwriteoffpos a2 ON a2.actid = a.id 
+                WHERE a.docnumber = :docnum
+              params:
+                docnum: "{doc_number}"
+              asserts:
+                - expect: "row_count = 1"
+                  description: "Позиции списания появились в output.actwriteoffpos"
