@@ -24,25 +24,26 @@ export default function ClassesPage() {
       return
     }
     setUser(currentUser)
-    
+
     try {
       const response = await fetch('/api/classes')
       const serverClasses = await response.json()
-      
       if (serverClasses.length > 0) {
         localStorage.setItem('classes', JSON.stringify(serverClasses))
       }
     } catch (error) {}
-    
-    const allClasses = JSON.parse(localStorage.getItem('classes') || '[]')
+
+    const allClasses: Classroom[] = JSON.parse(localStorage.getItem('classes') || '[]')
     
     if (currentUser.role === 'student') {
       const enrollments = getEnrollments()
-      const myClassIds = enrollments.filter(e => e.studentId === currentUser.id).map(e => e.classroomId)
-      const enrolledClasses = allClasses.filter(c => myClassIds.includes(c.id))
+      const myClassIds = enrollments
+        .filter(e => e.studentId === String(currentUser.id) || e.userId === String(currentUser.id))
+        .map(e => e.classroomId || e.courseId)
+      const enrolledClasses = allClasses.filter((c: Classroom) => myClassIds.includes(c.id))
       setMyClasses(enrolledClasses)
     } else {
-      const teacherClasses = allClasses.filter(c => c.teacherId === currentUser.id)
+      const teacherClasses = allClasses.filter((c: Classroom) => String(c.teacherId) === String(currentUser.id))
       setMyClasses(teacherClasses)
     }
     
@@ -80,10 +81,10 @@ export default function ClassesPage() {
         return
       }
       
-      const classToJoin = result.classroom
+      const classToJoin: Classroom = result.classroom
       
-      const existingClasses = JSON.parse(localStorage.getItem('classes') || '[]')
-      if (!existingClasses.find((c: any) => c.id === classToJoin.id)) {
+      const existingClasses: Classroom[] = JSON.parse(localStorage.getItem('classes') || '[]')
+      if (!existingClasses.find((c: Classroom) => c.id === classToJoin.id)) {
         existingClasses.push(classToJoin)
         localStorage.setItem('classes', JSON.stringify(existingClasses))
       }
@@ -91,17 +92,14 @@ export default function ClassesPage() {
       const newEnrollment: Enrollment = {
         id: generateId(),
         classroomId: classToJoin.id,
-        studentId: user.id,
+        courseId: classToJoin.id,
+        studentId: String(user.id),
+        userId: String(user.id),
         studentName: user.name,
         enrolledAt: new Date().toISOString()
       }
       
       addEnrollment(newEnrollment)
-      await fetch('/api/enrollments', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(newEnrollment)
-});
       
       alert(`✅ Вы присоединились к классу "${classToJoin.name}"!`)
       setInviteCode('')
@@ -148,7 +146,7 @@ export default function ClassesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {myClasses.map((classroom) => (
+          {myClasses.map((classroom: Classroom) => (
             <Link key={classroom.id} href={`/classes/${classroom.id}`} className="block bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
               <div className={`h-24 ${classroom.coverColor || 'bg-gradient-to-r from-blue-500 to-purple-600'}`} />
               <div className="p-4">
