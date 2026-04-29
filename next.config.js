@@ -1,7 +1,6 @@
-import type { NextConfig } from "next";
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Разрешаем загрузку файлов
   async headers() {
     return [
       {
@@ -12,9 +11,11 @@ const nextConfig = {
       },
     ]
   },
+  // Настройки для деплоя
+  images: {
+    unoptimized: true,
+  },
+  output: 'standalone',
 }
 
 module.exports = nextConfig
-
-export default nextConfig;
-
