@@ -1,25 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-declare global {
-  var _globalEnrollments: any[]
-}
-
-if (!global._globalEnrollments) {
-  global._globalEnrollments = []
-}
+// Общее хранилище на сервере (для всех пользователей)
+let globalEnrollments: any[] = []
 
 export async function GET() {
-  return NextResponse.json(global._globalEnrollments)
+  return NextResponse.json(globalEnrollments)
 }
 
 export async function POST(request: NextRequest) {
-  const newEnrollment = await request.json()
-  global._globalEnrollments.push(newEnrollment)
-  return NextResponse.json(newEnrollment)
-}
-
-export async function PUT(request: NextRequest) {
-  const enrollments = await request.json()
-  global._globalEnrollments = enrollments
-  return NextResponse.json({ success: true })
+  const enrollment = await request.json()
+  globalEnrollments.push(enrollment)
+  console.log('✅ Ученик добавлен:', enrollment.studentName)
+  return NextResponse.json(enrollment)
 }

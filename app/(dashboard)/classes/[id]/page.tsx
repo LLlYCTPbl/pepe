@@ -41,6 +41,17 @@ export default function ClassPage({ params }: { params: { id: string } }) {
   const [assignmentSubmissions, setAssignmentSubmissions] = useState<Submission[]>([])
 
   const loadData = async () => {
+    // Загружаем учеников с сервера
+try {
+  const res = await fetch('/api/enrollments')
+  const serverEnrollments = await res.json()
+  const classStudentsList = serverEnrollments.filter((e: any) => 
+    e.classroomId === id || e.courseId === id
+  )
+  setStudents(classStudentsList)
+} catch (error) {
+  console.log('Ошибка загрузки учеников')
+}
     const currentUser = getCurrentUser()
     if (!currentUser) {
       router.push('/login')

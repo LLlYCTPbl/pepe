@@ -100,6 +100,12 @@ export default function ClassesPage() {
       }
       
       addEnrollment(newEnrollment)
+      // После addEnrollment(newEnrollment);
+await fetch('/api/enrollments', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(newEnrollment)
+})
       
       alert(`✅ Вы присоединились к классу "${classToJoin.name}"!`)
       setInviteCode('')
